@@ -1,52 +1,127 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app/model/todo.dart';
 
-class Homescreen extends StatelessWidget {
-  Homescreen({super.key});
+class TodoApplication extends StatefulWidget {
+  TodoApplication({super.key});
 
-  List<Todo> todos = [
+  final List<Todo> todos = [
     Todo(
       id: "1",
-      title: "This is a demo",
-      description: "Here will be description",
+      title: "This is title",
+      description: "Hero Arun",
+      isCompleted: true,
     ),
     Todo(
       id: "2",
-      title: "This is demo 2",
-      description: "Here will be desc of demo 2",
+      title: "This is title",
+      description: "Don Arun",
       isCompleted: true,
     ),
     Todo(
       id: "3",
-      title: "This is a demo 3",
-      description: "Here will be des of demo 3",
+      title: "This is title",
+      description: "Timro Babe",
+      isCompleted: true,
     ),
     Todo(
       id: "4",
-      title: "this is a demo 4",
-      description: "Here will be desc of demo 4",
-      isCompleted: false,
+      title: "This is title",
+      description: "Binisha Don",
+      isCompleted: true,
     ),
   ];
 
   @override
+  State<TodoApplication> createState() => _TodoApplicationState();
+}
+
+class _TodoApplicationState extends State<TodoApplication> {
+  final GlobalKey<FormState> todoFormKey = GlobalKey();
+
+  String title = "";
+  String description = "";
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Todos")),
-      body: ListView.builder(
-        itemBuilder: (ctx, i) {
-          return ListTile(
-            leading: Checkbox(
-              value: todos[i].isCompleted,
-              onChanged: (value) {},
-            ),
-            title: Text(todos[i].title),
-            subtitle: Text(todos[i].description),
-          );
-        },
-        itemCount: todos.length,
+      appBar: AppBar(
+        title: const Text(
+          "Todo Application",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: const Color.fromARGB(255, 21, 4, 145),
+        centerTitle: true,
       ),
+      body:
+          widget.todos.isEmpty
+              ? Center(child: Text("No todos"))
+              : ListView.builder(
+                itemCount: widget.todos.length,
+                itemBuilder: (ctx, i) {
+                  return ListTile(
+                    leading: Checkbox(
+                      value: widget.todos[i].isCompleted,
+                      onChanged: (value) {
+                        setState(() {
+                          widget.todos[i].isCompleted = value ?? false;
+                        });
+                      },
+                    ),
+                    title: Text(widget.todos[i].title),
+                    subtitle: Text(widget.todos[i].description),
+                    trailing: IconButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text("Are you want to Delete"),
+                              content: Text("This action cannot be undone"),
+                              actions: [
+                                FilledButton.tonal(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.deepPurple.shade400,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      widget.todos.remove(widget.todos[i]);
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        backgroundColor:
+                                            Colors.greenAccent.shade700,
+                                        behavior: SnackBarBehavior.floating,
+                                        duration: Duration(seconds: 3),
+                                        showCloseIcon: true,
 
+                                        content: Text("Deleted"),
+                                      ),
+                                    );
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Yes"),
+                                ),
+                                FilledButton.tonal(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.deepPurple.shade400,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("No"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      icon: Icon(Icons.delete),
+                      color: Colors.red,
+                    ),
+                  );
+                },
+              ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(
@@ -56,11 +131,89 @@ class Homescreen extends StatelessWidget {
                 width: double.infinity,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-
                   child: Form(
+                    key: todoFormKey,
                     child: Column(
                       children: [
                         Text("Add Todo", style: TextStyle(fontSize: 28)),
+                        TextFormField(
+                          decoration: InputDecoration(labelText: "Title"),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Please Provide Description";
+                            } else {
+                              return null;
+                            }
+                          },
+
+                          onSaved: (value) {
+                            setState(() {
+                              title = value!;
+                            });
+                          },
+
+                          onTapOutside:
+                              (event) => FocusScope.of(
+                                context,
+                              ).requestFocus(FocusNode()),
+                        ),
+                        TextFormField(
+                          decoration: InputDecoration(labelText: "Description"),
+                          maxLines: 3,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Please Provide Description";
+                            } else {
+                              return null;
+                            }
+                          },
+                          onSaved: (value) {
+                            setState(() {
+                              description = value!;
+                            });
+                          },
+
+                          onTapOutside:
+                              (event) => FocusScope.of(
+                                context,
+                              ).requestFocus(FocusNode()),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              FilledButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("Cancel"),
+                              ),
+                              FilledButton(
+                                onPressed: () {
+                                  if (!todoFormKey.currentState!.validate()) {
+                                    return;
+                                  }
+
+                                  todoFormKey.currentState!.save();
+
+                                  setState(() {
+                                    widget.todos.add(
+                                      Todo(
+                                        id: widget.todos.length.toString(),
+                                        title: title,
+                                        description: description,
+                                      ),
+                                    );
+                                  });
+
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("Submit"),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),

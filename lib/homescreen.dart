@@ -47,6 +47,7 @@ class _TodoApplicationState extends State<TodoApplication> {
     for (var todo in response.data) {
       widget.todos.add(Todo.fromMap(todo));
     }
+    return widget.todos;
   }
 
   final GlobalKey<FormState> todoFormKey = GlobalKey();
@@ -134,97 +135,152 @@ class _TodoApplicationState extends State<TodoApplication> {
               //     );
               //   },
               // ),
-              : FutureBuilder(
-                future: fetchTodos(),
-                builder: (ctx, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasData) {
-                      return ListView.builder(
-                        itemCount: widget.todos.length,
-                        itemBuilder: (ctx, i) {
-                          return ListTile(
-                            leading: Checkbox(
-                              value: widget.todos[i].isCompleted,
-                              onChanged: (value) {
-                                setState(() {
-                                  widget.todos[i].isCompleted = value ?? false;
-                                });
-                              },
-                            ),
-                            title: Text(widget.todos[i].title),
-                            subtitle: Text(widget.todos[i].description ?? "-"),
-                            trailing: IconButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: Text("Are you want to Delete"),
-                                      content: Text(
-                                        "This action cannot be undone",
-                                      ),
-                                      actions: [
-                                        FilledButton.tonal(
-                                          style: FilledButton.styleFrom(
-                                            backgroundColor:
-                                                Colors.deepPurple.shade400,
-                                            foregroundColor: Colors.white,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              widget.todos.remove(
-                                                widget.todos[i],
-                                              );
-                                            });
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                backgroundColor:
-                                                    Colors.greenAccent.shade700,
-                                                behavior:
-                                                    SnackBarBehavior.floating,
-                                                duration: Duration(seconds: 3),
-                                                showCloseIcon: true,
+              : Column(
+                children: [
+                  Row(
+                    spacing: 20,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ActionChip(
+                        label: Text(
+                          "All",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.deepPurpleAccent,
+                        onPressed: () {},
+                      ),
+                      ActionChip(
+                        label: Text(
+                          "Completed",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.deepPurpleAccent,
+                        onPressed: () {
+                          widget.todos.where((todo) => todo.isCompleted);
+                        },
+                      ),
+                      ActionChip(
+                        label: Text(
+                          "Pending",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.deepPurpleAccent,
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 700,
+                    child: FutureBuilder(
+                      future: fetchTodos(),
+                      builder: (ctx, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          if (snapshot.hasData) {
+                            return ListView.builder(
+                              itemCount: widget.todos.length,
+                              itemBuilder: (ctx, i) {
+                                return ListTile(
+                                  leading: Checkbox(
+                                    value: widget.todos[i].isCompleted,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        widget.todos[i].isCompleted =
+                                            value ?? false;
+                                      });
+                                    },
+                                  ),
+                                  title: Text(widget.todos[i].title),
+                                  subtitle: Text(
+                                    widget.todos[i].description ?? "-",
+                                  ),
+                                  trailing: IconButton(
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: Text(
+                                              "Are you want to Delete",
+                                            ),
+                                            content: Text(
+                                              "This action cannot be undone",
+                                            ),
+                                            actions: [
+                                              FilledButton.tonal(
+                                                style: FilledButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors
+                                                          .deepPurple
+                                                          .shade400,
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    widget.todos.remove(
+                                                      widget.todos[i],
+                                                    );
+                                                  });
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    SnackBar(
+                                                      backgroundColor:
+                                                          Colors
+                                                              .greenAccent
+                                                              .shade700,
+                                                      behavior:
+                                                          SnackBarBehavior
+                                                              .floating,
+                                                      duration: Duration(
+                                                        seconds: 3,
+                                                      ),
+                                                      showCloseIcon: true,
 
-                                                content: Text("Deleted"),
+                                                      content: Text("Deleted"),
+                                                    ),
+                                                  );
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: Text("Yes"),
                                               ),
-                                            );
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Text("Yes"),
-                                        ),
-                                        FilledButton.tonal(
-                                          style: FilledButton.styleFrom(
-                                            backgroundColor:
-                                                Colors.deepPurple.shade400,
-                                            foregroundColor: Colors.white,
-                                          ),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Text("No"),
-                                        ),
-                                      ],
-                                    );
-                                  },
+                                              FilledButton.tonal(
+                                                style: FilledButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors
+                                                          .deepPurple
+                                                          .shade400,
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: Text("No"),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                    icon: Icon(Icons.delete),
+                                    color: Colors.red,
+                                  ),
                                 );
                               },
-                              icon: Icon(Icons.delete),
-                              color: Colors.red,
-                            ),
-                          );
-                        },
-                      );
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error ${snapshot.error}'));
-                    } else {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                  } else {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                },
+                            );
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text('Error ${snapshot.error}'),
+                            );
+                          } else {
+                            return Center(child: CircularProgressIndicator());
+                          }
+                        } else {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

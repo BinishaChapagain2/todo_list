@@ -5,7 +5,7 @@ import 'package:todo_app/model/todo.dart';
 class TodoApplication extends StatefulWidget {
   TodoApplication({super.key});
 
-  final List<Todo> todos = [
+  List<Todo> todos = [
     Todo(
       id: "1",
       title: "This is title",
@@ -37,6 +37,8 @@ class TodoApplication extends StatefulWidget {
 }
 
 class _TodoApplicationState extends State<TodoApplication> {
+  String filter = "all";
+
   fetchTodos() async {
     final Dio dio = Dio();
 
@@ -47,7 +49,14 @@ class _TodoApplicationState extends State<TodoApplication> {
     for (var todo in response.data) {
       widget.todos.add(Todo.fromMap(todo));
     }
-    return widget.todos;
+
+    if (filter == "all") {
+      return widget.todos;
+    } else if (filter == "completed") {
+      return widget.todos.where((todo) => todo.isCompleted).toList();
+    } else {
+      return widget.todos.where((todo) => !todo.isCompleted).toList();
+    }
   }
 
   final GlobalKey<FormState> todoFormKey = GlobalKey();
@@ -144,28 +153,58 @@ class _TodoApplicationState extends State<TodoApplication> {
                       ActionChip(
                         label: Text(
                           "All",
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color:
+                                filter == "all" ? Colors.white : Colors.black,
+                          ),
                         ),
-                        backgroundColor: Colors.deepPurpleAccent,
-                        onPressed: () {},
+                        backgroundColor:
+                            filter == "all" ? Colors.deepPurpleAccent : null,
+                        onPressed: () {
+                          setState(() {
+                            filter = "all";
+                          });
+                        },
                       ),
                       ActionChip(
                         label: Text(
                           "Completed",
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color:
+                                filter == "completed"
+                                    ? Colors.white
+                                    : Colors.black,
+                          ),
                         ),
-                        backgroundColor: Colors.deepPurpleAccent,
+                        backgroundColor:
+                            filter == "completed"
+                                ? Colors.deepPurpleAccent
+                                : null,
                         onPressed: () {
-                          widget.todos.where((todo) => todo.isCompleted);
+                          setState(() {
+                            filter = "completed";
+                          });
                         },
                       ),
                       ActionChip(
                         label: Text(
                           "Pending",
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color:
+                                filter == "pending"
+                                    ? Colors.white
+                                    : Colors.black,
+                          ),
                         ),
-                        backgroundColor: Colors.deepPurpleAccent,
-                        onPressed: () {},
+                        backgroundColor:
+                            filter == "pending"
+                                ? Colors.deepPurpleAccent
+                                : null,
+                        onPressed: () {
+                          setState(() {
+                            filter = "pending";
+                          });
+                        },
                       ),
                     ],
                   ),
@@ -176,6 +215,8 @@ class _TodoApplicationState extends State<TodoApplication> {
                       builder: (ctx, snapshot) {
                         if (snapshot.connectionState == ConnectionState.done) {
                           if (snapshot.hasData) {
+                            widget.todos = snapshot.data as List<Todo>;
+
                             return ListView.builder(
                               itemCount: widget.todos.length,
                               itemBuilder: (ctx, i) {
